@@ -22,6 +22,11 @@
         <<: *api_info
         fabric_name: test
         vrf_name: MyVRF_50001
-        vrf_template_config: "{\"vrfVlanId\":\"2\",\"vrfSegmentId\":\"50001\",\"nveId\":\"1\",\"asn\":\"65500\",\"vrfName\":\"MyVRF_50001\"}"
+        vrf_template_config: 
+          nveId: "1"
+          vrfVlanId: "2"
+          asn: "65500"
+          vrfName: "MyVRF_50001"
+          vrfSegmentId: "50001"
         vrf_id: 50001
         state: present

@@ -2,6 +2,8 @@
 
 
 import requests
+import sys
+import json
 
 dcnm_argument_spec = dict(
     baseurl=dict(type='str', required=True),
@@ -133,14 +135,21 @@ class DCNM(object):
         # compare attributes
         need_update=False
         for jsattr, yamlattr in self.VRF_ATTRS.iteritems():
-            if js[jsattr] != yaml[yamlattr]:
-                need_update = True
+            if jsattr == "vrfTemplateConfig": # special case for vrfTemplateConfig - compare the dict not the JSON
+                if json.loads(js['vrfTemplateConfig']) != yaml[yamlattr]:
+                    need_update = True
+            else:
+                if js[jsattr] != yaml[yamlattr]:
+                    need_update = True
 
         return need_update
 
     def generate_vrf_body(self, module_params):
         body=dict()
         for jsattr, yamlattr in self.VRF_ATTRS.iteritems():
-            body[jsattr] = module_params[yamlattr]
+            if jsattr == "vrfTemplateConfig": # special case for vrfTemplateConfig - convert dict to string
+                body[jsattr] = json.dumps(module_params[yamlattr])
+            else:
+                body[jsattr] = module_params[yamlattr]
         
         return body

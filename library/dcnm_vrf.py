@@ -66,7 +66,6 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.dcnm import DCNM, dcnm_argument_spec
 
 
-
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dcnm_argument_spec
@@ -75,7 +74,7 @@ def run_module():
         vrf_name=dict(type='str', required=True),
         vrf_template=dict(type='str', required=False, default="Default_VRF_Universal"),
         vrf_extension_template=dict(type='str', required=False, default="Default_VRF_Extension_Universal"),
-        vrf_template_config=dict(type='str', required=False, default=""),
+        vrf_template_config=dict(type='dict', required=True),
         vrf_id=dict(type='int', required=True),
         state=dict(type='str', choices=['present', 'absent'], default='present'),
 
@@ -113,7 +112,6 @@ def run_module():
         # Handle state==present cases
         if vrf is not None:
             # VRF already exists
-
             need_update = dcnm.compare_vrf_attrs(vrf, module.params)
 
             if need_update==False:
@@ -135,7 +133,7 @@ def run_module():
         module.exit_json(**result)
 
     except Exception as e:
-        module.fail_json(msg=str(e))
+        module.fail_json(msg=str(e), result=result)
 
 def main():
     run_module()
