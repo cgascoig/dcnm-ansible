@@ -24,9 +24,43 @@
         vrf_name: MyVRF_50001
         vrf_template_config: 
           nveId: "1"
-          vrfVlanId: "2"
+          vrfVlanId: "3"
           asn: "65500"
           vrfName: "MyVRF_50001"
           vrfSegmentId: "50001"
         vrf_id: 50001
+        state: present
+
+    - name: create/update network
+      dcnm_network:
+        <<: *api_info
+        fabric_name: test
+        network_name: "MyNetwork_30000"
+        vrf_name: MyVRF_50001
+        network_id: 30000
+        network_template_config:
+          # trmEnabled: "false"
+          mcastGroup: "239.1.1.0"
+          vrfName: "MyVRF_50001"
+          # enableIR: "false"
+          nveId: "1"
+          # tag: "12345"
+          gatewayIpAddress: "10.3.3.1/24"
+          segmentId: "30000"
+          intfDescription: ""
+          vlanName: ""
+          secondaryGW1: ""
+          secondaryGW2: ""
+          # enableL3OnBorder: "false"
+          vlanId: "300"
+          # vrfDhcp: ""
+          networkName: "MyNetwork_30000"
+          # rtBothAuto: "false"
+          # loopbackId: ""
+          # gatewayIpV6Address: ""
+          suppressArp: "true"
+          isLayer2Only: "false"
+          # mtu: ""
+          # dhcpServerAddr1: ""
+          # dhcpServerAddr2: ""
         state: present

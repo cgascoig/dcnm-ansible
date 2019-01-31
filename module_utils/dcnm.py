@@ -89,7 +89,6 @@ class DCNM(object):
 
         try:
             vrf=self.request("DELETE", "/top-down/fabrics/%s/vrfs/%s"%(fabric_name, vrf_name))
-            print(vrf)
             return vrf
         except Exception as e:
             raise Exception("An error occurred while deleting VRF: %s" % e)
@@ -135,6 +134,76 @@ class DCNM(object):
         "vrfExtensionTemplate": "vrf_extension_template",
         "vrfTemplateConfig": "vrf_template_config",
         "vrfId": "vrf_id",
+    }
+
+    #################################
+    # Network related methods
+    #################################
+
+    def get_net(self, fabric_name, net_name):
+        if self.token is None:
+            raise Exception("Attempt to get network info before authentication")
+
+        try:
+            net=self.request("GET", "/top-down/fabrics/%s/networks/%s"%(fabric_name, net_name))
+            return net
+        except:
+            # assume any exception means the network doesn't exist
+            return None
+
+    def delete_net(self, fabric_name, net_name):
+        if self.token is None:
+            raise Exception("Attempt to delete network before authentication")
+
+        try:
+            net=self.request("DELETE", "/top-down/fabrics/%s/networks/%s"%(fabric_name, net_name))
+            return net
+        except Exception as e:
+            raise Exception("An error occurred while deleting network: %s" % e)
+
+    def create_net(self, module_params):
+        body = self.generate_body(module_params, self.NET_ATTRS)
+        body.update(
+            fabric=module_params['fabric_name'],
+            vrf=module_params['vrf_name'],
+            networkName=module_params['network_name'],
+        )
+
+        if self.token is None:
+            raise Exception("Attempt to create network info before authentication")
+        
+        try:
+            net = self.request("POST", "/top-down/fabrics/%s/networks"%module_params['fabric_name'], json=body)
+            return net
+        except Exception as e:
+            raise Exception("An error occurred while creating network: %s"%e)
+    
+    def update_net(self, module_params):
+        body = self.generate_body(module_params, self.NET_ATTRS)
+        body.update(
+            fabric=module_params['fabric_name'],
+            vrf=module_params['vrf_name'],
+            networkName=module_params['network_name'],
+        )
+
+        if self.token is None:
+            raise Exception("Attempt to update network info before authentication")
+        
+        try:
+            net = self.request("PUT", "/top-down/fabrics/%s/networks/%s"%(module_params['fabric_name'], module_params['network_name']), json=body)
+            return net
+        except Exception as e:
+            raise Exception("An error occurred while updating network: %s"%e)
+
+    # return True if update needed
+    def compare_net_attrs(self, js, yaml):
+        return self.compare_attrs(js, yaml, self.NET_ATTRS)
+
+    NET_ATTRS = {
+        "networkTemplate": "network_template",
+        "networkExtensionTemplate": "network_extension_template",
+        "networkTemplateConfig": "network_template_config",
+        "networkId": "network_id",
     }
 
     #################################
