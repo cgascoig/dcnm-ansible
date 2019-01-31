@@ -69,6 +69,9 @@ class DCNM(object):
             raise Exception("An error has occurred while sending request to DCNM: %s" % e)
             return None
 
+    #################################
+    # VRF related methods
+    #################################
     def get_vrf(self, fabric_name, vrf_name):
         if self.token is None:
             raise Exception("Attempt to get VRF info before authentication")
@@ -92,7 +95,7 @@ class DCNM(object):
             raise Exception("An error occurred while deleting VRF: %s" % e)
 
     def create_vrf(self, module_params):
-        body = self.generate_vrf_body(module_params)
+        body = self.generate_body(module_params, self.VRF_ATTRS)
         body.update(
             fabric=module_params['fabric_name'],
             vrfName=module_params['vrf_name'],
@@ -108,7 +111,7 @@ class DCNM(object):
             raise Exception("An error occurred while creating VRF: %s"%e)
     
     def update_vrf(self, module_params):
-        body = self.generate_vrf_body(module_params)
+        body = self.generate_body(module_params, self.VRF_ATTRS)
         body.update(
             fabric=module_params['fabric_name'],
             vrfName=module_params['vrf_name'],
@@ -123,20 +126,29 @@ class DCNM(object):
         except Exception as e:
             raise Exception("An error occurred while updating VRF: %s"%e)
 
+    # return True if update needed
+    def compare_vrf_attrs(self, js, yaml):
+        return self.compare_attrs(js, yaml, self.VRF_ATTRS)
+
     VRF_ATTRS = {
         "vrfTemplate": "vrf_template",
         "vrfExtensionTemplate": "vrf_extension_template",
         "vrfTemplateConfig": "vrf_template_config",
         "vrfId": "vrf_id",
     }
+
+    #################################
+    # Genric utility methods
+    #################################
     
     # return True if update needed
-    def compare_vrf_attrs(self, js, yaml):
-        # compare attributes
+    def compare_attrs(self, js, yaml, attrmap):
         need_update=False
-        for jsattr, yamlattr in self.VRF_ATTRS.iteritems():
-            if jsattr == "vrfTemplateConfig": # special case for vrfTemplateConfig - compare the dict not the JSON
-                if json.loads(js['vrfTemplateConfig']) != yaml[yamlattr]:
+        for jsattr, yamlattr in attrmap.iteritems():
+            if type(yaml[yamlattr]) is dict:
+                # if the attribute in the yaml is a dict, parse the json attribute as json
+                # this handles the vrfTemplateConfig and networkTemplateConfig attributes which are actually JSON encoded strings in the API
+                if json.loads(js[jsattr]) != yaml[yamlattr]:
                     need_update = True
             else:
                 if js[jsattr] != yaml[yamlattr]:
@@ -144,10 +156,12 @@ class DCNM(object):
 
         return need_update
 
-    def generate_vrf_body(self, module_params):
+    def generate_body(self, module_params, attrmap):
         body=dict()
-        for jsattr, yamlattr in self.VRF_ATTRS.iteritems():
-            if jsattr == "vrfTemplateConfig": # special case for vrfTemplateConfig - convert dict to string
+        for jsattr, yamlattr in attrmap.iteritems():
+            # if the attribute in the module_params is a dict, dump the attribute as json
+            # this handles the vrfTemplateConfig and networkTemplateConfig attributes which are actually JSON encoded strings in the API
+            if type(module_params[yamlattr]) is dict:
                 body[jsattr] = json.dumps(module_params[yamlattr])
             else:
                 body[jsattr] = module_params[yamlattr]
