@@ -1,3 +1,20 @@
+# Cisco DCNM Ansible Module
+
+## Installation
+
+Ansible must be installed. 
+
+Clone this repository:
+```
+git clone https://github.com/cgascoig/dcnm-ansible
+```
+
+## Usage
+
+Create a playbook, like this example:
+
+```yaml
+
 ---
 - name: test dcnm module
   hosts: localhost
@@ -64,3 +81,13 @@
           # enableIR: "false"
           # trmEnabled: "false"
         state: present
+
+```
+
+The Ansible modules closely mirror the DCNM REST API for top-down network provisioning so look at the API documentation for more details on the parameters: https://<DCNM_IP>/api-docs/
+
+Execute playbook:
+
+```
+ansible-playbook test-playbook.yml
+```

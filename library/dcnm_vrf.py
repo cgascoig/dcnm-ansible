@@ -10,56 +10,89 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: my_sample_module
+module: dcnm_vrf
 
-short_description: This is my sample module
+short_description: Manage a VRF within Cisco DCNM
 
 version_added: "2.4"
 
 description:
-    - "This is my longer description explaining my sample module"
+    - "Manage a VRF within Cisco DCNM"
 
 options:
-    name:
-        description:
-            - This is the message to send to the sample module
-        required: true
-    new:
-        description:
-            - Control to demo if the result of this module is changed or not
-        required: false
-
-extends_documentation_fragment:
-    - azure
+  baseurl:
+    description:
+    - 'The base URL of the DCNM REST API. Usually of the form https://<DCNM_API>/rest'
+    required: yes
+  username:
+    description:
+    - 'Username for DCNM API'
+    required: yes
+  password:
+    description:
+    - 'Password for DCNM API'
+    required: yes
+  verify:
+    description:
+    - 'Verify SSL certificates of DCNM REST API.'
+    required: no
+    type: bool
+    default: yes
+  fabric_name:
+    description:
+    - 'Fabric name with DCNM'
+    required: yes
+  vrf_name:
+    description:
+    - 'VRF name within DCNM'
+    required: yes
+  vrf_template:
+    description:
+    - 'VRF template to use'
+    required: no
+    default: Default_VRF_Universal
+  vrf_extension_template:
+    description:
+    - 'VRF extension template to use'
+    required: no
+    default: Default_VRF_Extension_Universal
+  vrf_template_config:
+    description:
+    - 'Configuration attributes passed to the VRF and VRF extension templates. See examples for minimal template config for default templates. '
+    required: yes
+    type: dict
+  vrf_id:
+    description:
+    - 'VRF ID'
+    required: yes
+    type: int
+  state:
+    description:
+    - 'Whether the VRF should exist within DCNM. If "present" will ensure the VRF is created. If "absent" will ensure the VRF is removed. '
+    required: no
+    default: present
 
 author:
-    - Your Name (@yourhandle)
+    - Chris Gascoigne (@cgascoig)
 '''
 
 EXAMPLES = '''
-# Pass in a message
-- name: Test with a message
-  my_new_test_module:
-    name: hello world
-
-# pass in a message and have changed true
-- name: Test with a message and changed output
-  my_new_test_module:
-    name: hello world
-    new: true
-
-# fail the module
-- name: Test failure of the module
-  my_new_test_module:
-    name: fail me
+- name: create/update VRF
+  dcnm_vrf:
+    <<: *api_info
+    fabric_name: MyFabric
+    vrf_name: MyVRF_50001
+    vrf_template_config: 
+        nveId: "1"
+        vrfVlanId: "3"
+        asn: "65500"
+        vrfName: "MyVRF_50001"
+        vrfSegmentId: "50001"
+    vrf_id: 50001
+    state: present
 '''
 
 RETURN = '''
-original_message:
-    description: The original name param that was passed in
-    type: str
-message:
-    description: The output message that the sample module generates
 '''
 
 from ansible.module_utils.basic import AnsibleModule
